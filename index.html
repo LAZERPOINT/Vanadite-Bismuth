@@ -178,6 +178,10 @@
       <div class="app-open-indicator"></div>
       <img class="app-icon" src="plus.png"></img>
     </div>
+        <div class="app-icon-container" id="settings-button" onclick="openSettings()">
+      <div class="app-open-indicator"></div>
+      <span class="app-icon">⚙</span>
+    </div>
     </div>
 
   </div>
@@ -233,6 +237,21 @@
         <label for="customAppUrl">App URL (Include https://):</label>
         <input type="text" id="customAppUrl" name="customAppUrl" required><br><br>
         <button type="button" onclick="addCustomApp()">Add App</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeSettings()">×</span>
+      <h2>Settings</h2>
+      <form id="backgroundSettingsForm">
+        <label for="backgroundImage">Background Image:</label>
+        <input type="file" id="backgroundImage" accept="image/*"><br><br>
+        <div class="background-preview">
+          <img id="backgroundPreviewImg" src="" alt="Background Preview">
+        </div>
+        <button type="button" onclick="applyBackground()">Apply Background</button>
       </form>
     </div>
   </div>
@@ -472,6 +491,70 @@ var customApps = [];
       saveCustomApps();
       displayCustomApps();
     }
+
+
+        function openSettings() {
+      var settingsModal = document.getElementById('settingsModal');
+      settingsModal.style.display = 'block';
+    }
+
+    function closeSettings() {
+      var settingsModal = document.getElementById('settingsModal');
+      settingsModal.style.display = 'none';
+    }
+
+    function applyBackground() {
+      var backgroundImageInput = document.getElementById('backgroundImage');
+      var backgroundPreviewImg = document.getElementById('backgroundPreviewImg');
+
+      if (backgroundImageInput.files && backgroundImageInput.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          document.body.style.backgroundImage = `url('${e.target.result}')`;
+        };
+        reader.readAsDataURL(backgroundImageInput.files[0]);
+      }
+
+      closeSettings();
+    }
+
+        function loadBackground() {
+      var savedBackground = localStorage.getItem('backgroundImage');
+      if (savedBackground) {
+        document.body.style.backgroundImage = `url('${savedBackground}')`;
+      }
+    }
+
+    // Save background image to local storage
+    function saveBackground(backgroundImage) {
+      localStorage.setItem('backgroundImage', backgroundImage);
+    }
+
+    function applyBackground() {
+      var backgroundImageInput = document.getElementById('backgroundImage');
+
+      if (backgroundImageInput.files && backgroundImageInput.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          var backgroundImageUrl = e.target.result;
+          document.body.style.backgroundImage = `url('${backgroundImageUrl}')`;
+
+          // Save background image to local storage
+          saveBackground(backgroundImageUrl);
+        };
+        reader.readAsDataURL(backgroundImageInput.files[0]);
+      }
+
+      closeSettings();
+    }
+
+    // ... (rest of the scripts) ...
+
+    // Load saved custom apps and background when the page loads
+    window.onload = function () {
+      loadCustomApps();
+      loadBackground();
+    };
 
 
   </script>
