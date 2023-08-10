@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Tabbed Web Browser</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-x: hidden;
+            animation: ease-in 0.3;
+        }
+        #tab-bar-container {
+            background-color: #333;
+            overflow-x: hidden;
+            padding: 5px 0;
+        }
+        #tab-bar {
+            display: flex;
+            overflow-x: auto;
+        }
+        .tab {
+            padding: 5px 10px;
+            background-color: #444;
+            color: white;
+            cursor: pointer;
+            margin-right: 5px;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+          iframe {
+    border: hidden;
+    border-style: hidden;
+    border-width: 0px;
+  }
+        .tab span {
+            flex: 1;
+        }
+        input {
+          border: none;
+        }
+        .tab .close-tab {
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        #add-tab {
+            background-color: #00C4C4;
+            color: white;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #browser-frame {
+            flex: 1;
+            border: none;
+        }
+        #url-input {
+            padding: 5px;
+            width: 100%;
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="tab-bar-container">
+        <div id="tab-bar">
+            <div id="add-tab">+</div>
+        </div>
+    </div>
+    <input type="text" id="url-input" placeholder="Enter URL">
+    <iframe id="browser-frame"></iframe>
+
+    <script>
+        const tabContainer = document.getElementById('tab-bar');
+        const addTabButton = document.getElementById('add-tab');
+        const urlInput = document.getElementById('url-input');
+        const browserFrame = document.getElementById('browser-frame');
+        const tabs = [];
+
+        function createTab(url) {
+            const tab = document.createElement('div');
+            tab.classList.add('tab');
+            const tabTitle = document.createElement('span');
+            tabTitle.textContent = 'Loading...';
+            tab.appendChild(tabTitle);
+            const closeTabButton = document.createElement('span');
+            closeTabButton.classList.add('close-tab');
+            closeTabButton.textContent = 'x';
+            tab.appendChild(closeTabButton);
+            tabContainer.insertBefore(tab, addTabButton);
+            tabs.push({ tab, url, tabTitle });
+            activateTab(tab, url);
+            closeTabButton.addEventListener('click', () => closeTab(tab));
+        }
+
+        function activateTab(tab, url) {
+            tabs.forEach(t => t.tab.classList.remove('active'));
+            tab.classList.add('active');
+            browserFrame.src = url;
+            urlInput.value = url;
+        }
+
+        function updateTabTitle(tabInfo, title) {
+            tabInfo.tabTitle.textContent = title;
+        }
+
+        function closeTab(tab) {
+            const tabInfo = tabs.find(t => t.tab === tab);
+            if (tabInfo) {
+                tabContainer.removeChild(tab);
+                tabs.splice(tabs.indexOf(tabInfo), 1);
+                if (tabInfo.tab.classList.contains('active')) {
+                    if (tabs.length > 0) {
+                        const newActiveTab = tabs[tabs.length - 1];
+                        activateTab(newActiveTab.tab, newActiveTab.url);
+                    } else {
+                        browserFrame.src = '';
+                        urlInput.value = '';
+                    }
+                }
+            }
+        }
+
+        addTabButton.addEventListener('click', () => {
+            createTab('https://www.example.com');
+        });
+
+        tabContainer.addEventListener('click', event => {
+            const clickedTab = event.target.closest('.tab');
+            if (clickedTab) {
+                const tabInfo = tabs.find(t => t.tab === clickedTab);
+                if (tabInfo) {
+                    activateTab(clickedTab, tabInfo.url);
+                }
+            }
+        });
+
+        browserFrame.addEventListener('load', () => {
+            const activeTab = tabs.find(t => t.tab.classList.contains('active'));
+            if (activeTab) {
+                updateTabTitle(activeTab, browserFrame.contentDocument.title);
+            }
+        });
+
+        window.addEventListener('message', event => {
+            if (event.source === browserFrame.contentWindow) {
+                const activeTab = tabs.find(t => t.tab.classList.contains('active'));
+                if (activeTab) {
+                    updateTabTitle(activeTab, event.data.title);
+                }
+            }
+        });
+
+        urlInput.addEventListener('keypress', event => {
+            if (event.key === 'Enter') {
+                const activeTab = tabs.find(t => t.tab.classList.contains('active'));
+                if (activeTab) {
+                    const newURL = urlInput.value;
+                    if (newURL) {
+                        activeTab.url = newURL;
+                        activateTab(activeTab.tab, newURL);
+                    }
+                }
+            }
+        });
+
+        createTab('https://www.example.com');
+    </script>
+</body>
+</html>

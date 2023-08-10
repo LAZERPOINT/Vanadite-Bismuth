@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>File Browser</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f0f0;
+  }
+  #file-browser {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  .folder, .file {
+    cursor: pointer;
+  }
+  .file-list {
+    margin-top: 10px;
+    padding-left: 20px;
+    list-style-type: none;
+  }
+  .folder-icon, .file-icon {
+    margin-right: 10px;
+  }
+  .popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+  }
+  .popup-content {
+    background-color: #fff;
+    padding: 20px;
+    max-width: 80%;
+    max-height: 80%;
+    overflow: auto;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  }
+  .close-popup {
+    background-color: #0078d4;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div id="file-browser">
+  <h2>File Browser</h2>
+  <button id="create-folder">Create Folder</button>
+  <input type="file" id="file-input">
+  <ul class="file-list" id="root">
+    <!-- Initial folder structure -->
+  </ul>
+</div>
+
+<div class="popup" id="preview-popup">
+  <div class="popup-content" id="popup-content"></div>
+  <button id="close-popup">Close</button>
+</div>
+
+<script>
+  const fileBrowser = document.getElementById('file-browser');
+  const createFolderButton = document.getElementById('create-folder');
+  const fileInput = document.getElementById('file-input');
+  const previewPopup = document.getElementById('preview-popup');
+  const popupContent = document.getElementById('popup-content');
+  const closePopupButton = document.getElementById('close-popup');
+
+  const storageKey = 'fileSystem';
+  let fileSystem = JSON.parse(localStorage.getItem(storageKey)) || {};
+
+  function updateFileSystem() {
+    localStorage.setItem(storageKey, JSON.stringify(fileSystem));
+  }
+
+  function renderFileList(container, files) {
+    container.innerHTML = '';
+    for (const item in files) {
+      const listItem = document.createElement('li');
+      listItem.className = files[item].type === 'folder' ? 'folder' : 'file';
+      listItem.innerText = item;
+      container.appendChild(listItem);
+      if (files[item].type === 'folder') {
+        const sublist = document.createElement('ul');
+        sublist.className = 'file-list';
+        listItem.appendChild(sublist);
+        renderFileList(sublist, files[item].content);
+      }
+    }
+  }
+
+  renderFileList(document.getElementById('root'), fileSystem);
+
+  createFolderButton.addEventListener('click', () => {
+    const folderName = prompt('Enter folder name:');
+    if (folderName && !fileSystem[folderName]) {
+      fileSystem[folderName] = { type: 'folder', content: {} };
+      updateFileSystem();
+      renderFileList(document.getElementById('root'), fileSystem);
+    }
+  });
+
+  fileInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    const selectedFolder = prompt('Enter target folder for the file:');
+    if (file && selectedFolder && fileSystem[selectedFolder] && fileSystem[selectedFolder].type === 'folder') {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const fileName = file.name;
+        fileSystem[selectedFolder].content[fileName] = { type: 'file', data: e.target.result };
+        updateFileSystem();
+        renderFileList(document.getElementById('root'), fileSystem);
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  fileBrowser.addEventListener('click', (event) => {
+    const clickedElement = event.target;
+    const clickedItem = clickedElement.innerText;
+    if (fileSystem[clickedItem]) {
+      if (fileSystem[clickedItem].type === 'folder') {
+        const sublist = clickedElement.querySelector('.file-list');
+        sublist.style.display = sublist.style.display === 'none' ? 'block' : 'none';
+      } else if (fileSystem[clickedItem].type === 'file') {
+        const fileExtension = clickedItem.split('.').pop().toLowerCase();
+        if (['png', 'jpg', 'jpeg', 'mp3', 'wav', 'txt', 'webp', 'mp4', 'mov', 'mkv'].includes(fileExtension)) {
+          showPopup(fileSystem[clickedItem].data, fileExtension);
+        }
+      }
+    }
+  });
+
+  function showPopup(data, extension) {
+    popupContent.innerHTML = '';
+    
+    if (extension === 'txt') {
+      popupContent.textContent = atob(data);
+    } else if (['png', 'jpg', 'jpeg', 'webp'].includes(extension)) {
+      popupContent.innerHTML = `<img src="${data}" alt="Preview">`;
+    } else if (['mp3', 'wav'].includes(extension)) {
+      popupContent.innerHTML = `<audio controls><source src="${data}" type="audio/${extension}"></audio>`;
+    } else if (['mp4', 'mov', 'mkv'].includes(extension)) {
+      popupContent.innerHTML = `<video controls><source src="${data}" type="video/${extension}"></video>`;
+    }
+
+    previewPopup.style.display = 'flex';
+  }
+
+  closePopupButton.addEventListener('click', () => {
+    previewPopup.style.display = 'none';
+  });
+</script>
+</body>
+</html>

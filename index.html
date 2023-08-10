@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="vanadite.png" type="image/x-icon">
+<meta name="twitter:card" content="An operating system in your web browser.">
+<meta name="twitter:title" content="Vanadite Bismuth">
+<meta name="twitter:description" content="An operating system in your web browser that can run nearly anything.">
+<meta name="twitter:image" content="vanadite2.png">
+
+<meta property="og:title" content="Vanadite Bismuth">
+<meta property="og:description" content="An operating system in your web browser that can run nearly anything.">
+<meta property="og:image" content="vanadite2.png">
+<meta property="og:url" content="https://vanaditeopos.netlify.app/">
+
+
+<title>Vanadite Bismuth</title>
+<style>
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 3;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+}
+
+.modal-content {
+  background-color: #fff; /* White content background */
+  padding: 20px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 80%;
+  max-height: 80%;
+  overflow: auto;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+  #custom-apps {
+    display: flex;
+    align-items: center; /* Vertically align custom app icons */
+  }
+  .custom-app-icon {
+
+    margin: 0 10px;
+    cursor: pointer;
+    right: 10px;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: poppins, sans-serif;
+    overflow: hidden;
+    background-image: url("pd.png");
+    background-size: cover;
+  }
+  #taskbar {
+    background-color: rgba(51, 51, 51, 0.3); /* Set background color with opacity */
+    height: 50px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    z-index: 2;
+    position: absolute;
+    bottom: 0px;
+    color: white;
+  }
+  .app-icon-container {
+    position: relative;
+  }
+  .app-icon {
+    width: 30px;
+    height: 30px;
+    margin: 0 10px;
+    cursor: pointer;
+  }
+  .app-open-indicator {
+    position: absolute;
+    top: -7.5px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: white;
+    display: none;
+  }
+  #clock {
+    color: white;
+  }
+  .window {
+    width: 300px;
+    height: 300px;
+    background-color: #fff;
+    border: 1px solid #333;
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    display: none;
+    z-index: 1;
+    resize: both;
+    overflow: hidden;
+  }
+  .window-header {
+    background-color: #333;
+    color: white;
+    padding: 5px;
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  iframe {
+    border: hidden;
+    border-style: hidden;
+    border-width: 0px;
+  }
+  .window-controls {
+    display: flex;
+  }
+  .window-content {
+    width: 100%;
+    height: calc(100% - 30px);
+    overflow: hidden;
+    position: relative;
+  }
+  .window-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  .close-button,
+  .fullscreen-button {
+    padding: 3px 8px;
+    margin-right: 5px;
+    cursor: pointer;
+  }
+  /* ... (modal styles) ... */
+</style>
+</head>
+<body>
+  <div id="taskbar">
+
+        <div class="clock-container">
+      <span id="clock"></span>
+  </div>
+
+    <div class="app-icon-container" onclick="openApp('app1')">
+      <div class="app-open-indicator" id="indicator-app1"></div>
+      <img class="app-icon" src="Squared.png" alt="App 1">
+    </div>
+    <div class="app-icon-container" onclick="openApp('app2')">
+      <div class="app-open-indicator" id="indicator-app2"></div>
+      <img class="app-icon" src="tetra.png" alt="App 2">
+    </div>
+    <div class="app-icon-container" onclick="openApp('app3')">
+      <div class="app-open-indicator" id="indicator-app3"></div>
+      <img class="app-icon" src="file.png" alt="App 3">
+    </div>
+    <div id="custom-apps"></div>
+                <div class="app-icon-container" id="add-custom-app-button" onclick="openAddCustomAppForm()">
+      <div class="app-open-indicator"></div>
+      <img class="app-icon" src="plus.png"></img>
+    </div>
+    </div>
+
+  </div>
+
+  <div class="window" id="app1">
+    <div class="window-header" onmousedown="dragWindow(event)">
+      Squared
+      <div class="window-controls">
+        <span class="fullscreen-button" onclick="toggleFullscreen('app1')">⛶</span>
+        <span class="close-button" onclick="closeApp('app1')">🞩</span>
+      </div>
+    </div>
+    <div class="window-content">
+      <iframe class="window-frame" src="file.html"></iframe>
+    </div>
+  </div>
+
+  <div class="window" id="app2">
+    <div class="window-header" onmousedown="dragWindow(event)">
+      Tetra
+      <div class="window-controls">
+        <span class="fullscreen-button" onclick="toggleFullscreen('app2')">⛶</span>
+        <span class="close-button" onclick="closeApp('app2')">🞩</span>
+      </div>
+    </div>
+    <div class="window-content">
+      <iframe class="window-frame" src="txt.html"></iframe>
+    </div>
+  </div>
+
+  <div class="window" id="app3">
+    <div class="window-header" onmousedown="dragWindow(event)">
+      File Browser
+      <div class="window-controls">
+        <span class="fullscreen-button" onclick="toggleFullscreen('app3')">⛶</span>
+        <span class="close-button" onclick="closeApp('app3')">🞩</span>
+      </div>
+    </div>
+    <div class="window-content">
+      <iframe class="window-frame" src="fle.html"></iframe>
+    </div>
+  </div>
+
+  <div id="addCustomAppModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeAddCustomApp()">🞩</span>
+      <h2>Add Custom App</h2>
+      <form id="addCustomAppForm">
+        <label for="customAppName">App Name:</label>
+        <input type="text" id="customAppName" name="customAppName" required><br><br>
+        <label for="customAppIconUrl">App Icon URL:</label>
+        <input type="text" id="customAppIconUrl" name="customAppIconUrl" required><br><br>
+        <label for="customAppUrl">App URL (Include https://):</label>
+        <input type="text" id="customAppUrl" name="customAppUrl" required><br><br>
+        <button type="button" onclick="addCustomApp()">Add App</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+
+    function updateClock() {
+      var clockElement = document.getElementById('clock');
+      var currentTime = new Date();
+      var hours = currentTime.getHours();
+      var minutes = currentTime.getMinutes();
+      var ampm = hours >= 12 ? 'PM' : 'AM';
+
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+
+      clockElement.textContent = hours + ':' + minutes + ' ' + ampm;
+
+      setTimeout(updateClock, 1000);
+    }
+
+    updateClock();
+
+    function openApp(appId) {
+      var appWindow = document.getElementById(appId);
+      appWindow.style.zIndex = getHighestZIndex() + 1;
+      appWindow.style.display = 'block';
+
+      var appIndicator = document.getElementById('indicator-' + appId);
+      appIndicator.style.display = 'block';
+    }
+
+    function closeApp(appId) {
+      var appWindow = document.getElementById(appId);
+      appWindow.style.display = 'none';
+
+      var appIndicator = document.getElementById('indicator-' + appId);
+      appIndicator.style.display = 'none';
+    }
+
+    function toggleFullscreen(appId) {
+      var appWindow = document.getElementById(appId);
+      if (appWindow.style.width === '100vw' && appWindow.style.height === '100vh') {
+        appWindow.style.width = '300px';
+        appWindow.style.height = '300px';
+      } else {
+        appWindow.style.width = '100vw';
+        appWindow.style.height = '100vh';
+      }
+    }
+
+    function dragWindow(event) {
+      var windowElement = event.target.closest('.window');
+      if (!windowElement) return;
+
+      var initialX = event.clientX;
+      var initialY = event.clientY;
+
+      function handleMouseMove(event) {
+        var dx = event.clientX - initialX;
+        var dy = event.clientY - initialY;
+
+        var rect = windowElement.getBoundingClientRect();
+        var newX = rect.left + dx;
+        var newY = rect.top + dy;
+
+        windowElement.style.left = newX + 'px';
+        windowElement.style.top = newY + 'px';
+
+        initialX = event.clientX;
+        initialY = event.clientY;
+      }
+
+      function handleMouseUp() {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      }
+
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    function getHighestZIndex() {
+      var windows = document.querySelectorAll('.window');
+      var maxZIndex = 0;
+      windows.forEach(function (window) {
+        var zIndex = parseInt(window.style.zIndex);
+        if (zIndex > maxZIndex) {
+          maxZIndex = zIndex;
+        }
+      });
+      return maxZIndex;
+    }
+
+var customApps = [];
+
+    function openAddCustomAppForm() {
+      var addCustomAppModal = document.getElementById('addCustomAppModal');
+      addCustomAppModal.style.display = 'block';
+    }
+
+    function addCustomApp() {
+      var customAppName = document.getElementById('customAppName').value;
+      var customAppIconUrl = document.getElementById('customAppIconUrl').value;
+      var customAppUrl = document.getElementById('customAppUrl').value;
+
+      var newCustomApp = {
+        name: customAppName,
+        iconUrl: customAppIconUrl,
+        appUrl: customAppUrl
+      };
+
+      customApps.push(newCustomApp);
+
+      var customAppsContainer = document.getElementById('custom-apps');
+      var customAppIcon = document.createElement('div');
+      customAppIcon.classList.add('app-icon-container', 'custom-app-icon');
+      customAppIcon.onclick = function () {
+        openCustomApp(customApps.length - 1);
+      };
+      customAppIcon.innerHTML = `
+        <div class="app-open-indicator"></div>
+        <img class="app-icon" src="${customAppIconUrl}" alt="${customAppName}">
+      `;
+      customAppsContainer.appendChild(customAppIcon);
+
+      closeAddCustomApp();
+    }
+
+    function openCustomApp(index) {
+      var customApp = customApps[index];
+      if (!customApp) return;
+
+      var customAppWindow = document.createElement('div');
+      customAppWindow.classList.add('window');
+      customAppWindow.id = 'customApp' + index;
+      customAppWindow.innerHTML = `
+        <div class="window-header" onmousedown="dragWindow(event)">
+          ${customApp.name}
+          <div class="window-controls">
+            <span class="fullscreen-button" onclick="toggleFullscreen('customApp${index}')">⛶</span>
+            <span class="close-button" onclick="closeApp('customApp${index}')">🞩</span>
+          </div>
+        </div>
+        <div class="window-content">
+          <iframe class="window-frame" src="${customApp.appUrl}"></iframe>
+        </div>
+      `;
+
+      document.body.appendChild(customAppWindow);
+
+      openApp('customApp' + index);
+    }
+
+    function closeAddCustomApp() {
+      var addCustomAppModal = document.getElementById('addCustomAppModal');
+      addCustomAppModal.style.display = 'none';
+    }
+
+        function loadCustomApps() {
+      var savedCustomApps = localStorage.getItem('customApps');
+      if (savedCustomApps) {
+        customApps = JSON.parse(savedCustomApps);
+        displayCustomApps();
+      }
+    }
+
+    function saveCustomApps() {
+      localStorage.setItem('customApps', JSON.stringify(customApps));
+    }
+
+    function displayCustomApps() {
+      var customAppsContainer = document.getElementById('custom-apps');
+      customAppsContainer.innerHTML = '';
+
+      customApps.forEach(function (customApp, index) {
+        var customAppIcon = document.createElement('div');
+        customAppIcon.classList.add('app-icon-container', 'custom-app-icon');
+        customAppIcon.onclick = function () {
+          openCustomApp(index);
+        };
+        customAppIcon.innerHTML = `
+          <div class="app-open-indicator"></div>
+          <img class="app-icon" src="${customApp.iconUrl}" alt="${customApp.name}">
+        `;
+        customAppsContainer.appendChild(customAppIcon);
+      });
+    }
+
+    function addCustomApp() {
+      var customAppName = document.getElementById('customAppName').value;
+      var customAppIconUrl = document.getElementById('customAppIconUrl').value;
+      var customAppUrl = document.getElementById('customAppUrl').value;
+
+      var newCustomApp = {
+        name: customAppName,
+        iconUrl: customAppIconUrl,
+        appUrl: customAppUrl
+      };
+
+      customApps.push(newCustomApp);
+      saveCustomApps();
+      displayCustomApps();
+
+      closeAddCustomApp();
+    }
+
+
+    window.onload = function () {
+      loadCustomApps();
+    };
+
+        function showContextMenu(index, event) {
+      event.preventDefault();
+
+      var contextMenu = document.createElement('div');
+      contextMenu.classList.add('context-menu');
+      contextMenu.innerHTML = `
+        <div class="context-menu-option" onclick="deleteCustomApp(${index})">Delete</div>
+      `;
+
+      contextMenu.style.left = event.clientX + 'px';
+      contextMenu.style.top = event.clientY + 'px';
+
+      document.body.appendChild(contextMenu);
+
+      window.addEventListener('click', function closeContextMenu() {
+        contextMenu.remove();
+        window.removeEventListener('click', closeContextMenu);
+      });
+    }
+
+    function deleteCustomApp(index) {
+      customApps.splice(index, 1);
+      saveCustomApps();
+      displayCustomApps();
+    }
+
+
+  </script>
+</body>
+</html>
