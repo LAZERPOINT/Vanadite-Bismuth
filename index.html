@@ -178,6 +178,10 @@
       <div class="app-open-indicator" id="indicator-app3"></div>
       <img class="app-icon" src="file.png" alt="App 3">
     </div>
+        <div class="app-icon-container" onclick="openApp('appw')">
+      <div class="app-open-indicator" id="indicator-app3"></div>
+      <img class="app-icon" src="wavetone.png" alt="Wavetone">
+    </div>
     <div id="custom-apps"></div>
                 <div class="app-icon-container" id="add-custom-app-button" onclick="openAddCustomAppForm()">
       <div class="app-open-indicator"></div>
@@ -214,6 +218,19 @@
     </div>
     <div class="window-content">
       <iframe class="window-frame" src="txt.html"></iframe>
+    </div>
+  </div>
+
+    <div class="window" id="appw">
+    <div class="window-header" onmousedown="dragWindow(event)">
+      Wavetone
+      <div class="window-controls">
+        <span class="fullscreen-button" onclick="toggleFullscreen('appw')">⛶</span>
+        <span class="close-button" onclick="closeApp('appw')">🞩</span>
+      </div>
+    </div>
+    <div class="window-content">
+      <iframe class="window-frame" src="wavetone.html"></iframe>
     </div>
   </div>
 

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WAVETONE</title>
+  <style>
+    body {
+      font-family: 'poppins', sans-serif;
+      background-color: #000;
+      color: #fff;
+      margin: 0;
+    }
+    h1, h2 {
+      margin: 0;
+      padding: 0;
+    }
+    .upload-form {
+      background-color: #333;
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+      width: 200px;
+    }
+    .upload-form.open {
+      display: block;
+    }
+    .upload-form label {
+      color: #fff;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .upload-form input[type="text"], .upload-form input[type="file"] {
+      width: 90%;
+      padding: 10px;
+      margin-bottom: 15px;
+      background-color: #444;
+      border: none;
+      color: #fff;
+    }
+    audio {
+      width: 100%;
+      position: fixed;
+      bottom:0;
+    }
+    .upload-form button {
+      background-color: #1DB954;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .upload-form button:hover {
+      background-color: #169745;
+    }
+    .upload-button {
+      background-color: #1DB954;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .upload-button:hover {
+      background-color: #169745;
+    }
+    .song-grid {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .song-card {
+      background-color: #333;
+      border-radius: 5px;
+      width: 150px;
+      margin: 5px;
+      padding: 15px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: left;
+    }
+    .song-card img {
+      width: 150px;
+      height: 150px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .song-info {
+      margin-top: auto;
+      text-align: left;
+    }
+    .song-info h3 {
+      margin: 0;
+      padding: 0;
+      text-align: left;
+    }
+    .song-info p {
+      margin: 5px 0;
+      padding: 0;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+    <h1>WAVETONE</h1>
+
+    <!-- Button to Open Upload Form -->
+    <button class="upload-button" id="openUploadForm">Upload Music</button>
+
+    <!-- Music Upload Form -->
+    <div class="upload-form" id="musicFormContainer">
+      <h2>Upload Song</h2>
+      <form id="musicForm">
+        <label for="artist">Artist:</label>
+        <input type="text" id="artist" required>
+        <label for="songName">Song Name:</label>
+        <input type="text" id="songName" required>
+        <label for="album">Album:</label>
+        <input type="text" id="album" required>
+        <label for="genre">Genre:</label>
+        <input type="text" id="genre" required>
+        <label for="coverArt">Cover Art (We would recomend anything below 1mb):</label>
+        <input type="file" id="coverArt" accept="image/*">
+        <label for="musicFile">MP3 File (We would recomend anything below 2mb):</label>
+        <input type="file" id="musicFile" accept=".mp3" required>
+        <button type="submit">Upload</button>
+      </form>
+    </div>
+
+    <!-- Music Player -->
+    <h2>Music Player</h2>
+    <audio controls id="musicPlayer">
+      Your browser does not support the audio element.
+    </audio>
+
+    <!-- Display Uploaded Songs -->
+    <h2>Uploaded Songs</h2>
+    <div class="song-grid" id="songGrid"></div>
+
+  <script>
+    const musicForm = document.getElementById('musicForm');
+    const musicFormContainer = document.getElementById('musicFormContainer');
+    const openUploadFormButton = document.getElementById('openUploadForm');
+    const musicPlayer = document.getElementById('musicPlayer');
+    const songGrid = document.getElementById('songGrid');
+
+    // Display uploaded songs in the grid format
+    function displayUploadedSongs() {
+      songGrid.innerHTML = '';
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('musicData')) {
+          const musicData = JSON.parse(localStorage.getItem(key));
+
+          const songCard = document.createElement('div');
+          songCard.classList.add('song-card');
+
+          const coverImg = document.createElement('img');
+          coverImg.src = musicData.coverArt;
+          coverImg.alt = `${musicData.artist} - ${musicData.songName}`;
+          songCard.appendChild(coverImg);
+
+          const songInfo = document.createElement('div');
+          songInfo.classList.add('song-info');
+
+          const songTitle = document.createElement('h3');
+          songTitle.textContent = musicData.songName;
+          songInfo.appendChild(songTitle);
+
+          const artistName = document.createElement('p');
+          artistName.textContent = musicData.artist;
+          songInfo.appendChild(artistName);
+
+          const albumInfo = document.createElement('p');
+          albumInfo.textContent = `Album: ${musicData.album}`;
+          songInfo.appendChild(albumInfo);
+
+          const genreInfo = document.createElement('p');
+          genreInfo.textContent = `Genre: ${musicData.genre}`;
+          songInfo.appendChild(genreInfo);
+
+          songCard.appendChild(songInfo);
+
+          const deleteButton = document.createElement('button');
+          deleteButton.classList.add('delete-button');
+          deleteButton.textContent = 'Delete';
+          deleteButton.addEventListener('click', function() {
+            localStorage.removeItem(key);
+            displayUploadedSongs();
+          });
+          songCard.appendChild(deleteButton);
+
+          songCard.addEventListener('click', function() {
+            musicPlayer.src = musicData.musicFile;
+            musicPlayer.load(); // Load the new source
+            musicPlayer.play(); // Play the audio
+          });
+
+          songGrid.appendChild(songCard);
+        }
+      }
+    }
+
+    // Handle music upload form submission
+    musicForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const artist = document.getElementById('artist').value;
+      const songName = document.getElementById('songName').value;
+      const album = document.getElementById('album').value;
+      const genre = document.getElementById('genre').value;
+      const coverArt = document.getElementById('coverArt').files[0];
+      const musicFile = document.getElementById('musicFile').files[0];
+
+      const readerCoverArt = new FileReader();
+      readerCoverArt.onload = function(event) {
+        const coverArtData = event.target.result;
+
+        const readerMusicFile = new FileReader();
+        readerMusicFile.onload = function(event) {
+          const musicFileData = event.target.result;
+
+          const musicData = {
+            artist: artist,
+            songName: songName,
+            album: album,
+            genre: genre,
+            coverArt: coverArtData,
+            musicFile: musicFileData
+          };
+
+          const timestamp = new Date().getTime();
+          const key = `musicData_${timestamp}`;
+          localStorage.setItem(key, JSON.stringify(musicData));
+
+          displayUploadedSongs();
+          closeUploadForm();
+        };
+
+        readerMusicFile.readAsDataURL(musicFile);
+      };
+
+      readerCoverArt.readAsDataURL(coverArt);
+    });
+
+    // Open the music upload form
+    openUploadFormButton.addEventListener('click', function() {
+      musicFormContainer.classList.add('open');
+    });
+
+    // Close the music upload form
+    function closeUploadForm() {
+      musicForm.reset();
+      musicFormContainer.classList.remove('open');
+    }
+
+    // Call the function to display uploaded songs on page load
+    displayUploadedSongs();
+  </script>
+</body>
+</html>
